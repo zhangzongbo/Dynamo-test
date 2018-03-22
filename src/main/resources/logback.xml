@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- configuration file for LogBack (slf4J implementation)
+See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-through-the-java-loggers/ -->
+<configuration debug="true">
+    <!-- To enable JMX Management -->
+    <jmxConfigurator/>
+
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+      <layout class="ch.qos.logback.classic.PatternLayout">     	
+	      <!--<pattern>%X{UUID} %X{client_ip} %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+	      <pattern>%date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+	    </layout>
+    </appender>
+    
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+	    <file>logs/log.log</file>
+        <!--过滤器，只记录info级别的日志-->
+		<!--<filter class="ch.qos.logback.classic.filter.LevelFilter">-->
+			<!--<level>INFO</level>-->
+			<!--<onMatch>ACCEPT</onMatch>-->
+			<!--<onMismatch>DENY</onMismatch>-->
+		<!--</filter>-->
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+	    	<!-- daily rollover -->
+	    	<fileNamePattern>logs/loanspider.%d{yyyy-MM-dd}.log</fileNamePattern>
+	    	<!--<fileNamePattern>/home/zhangzb/var/log/messages</fileNamePattern>-->
+
+	    	<!-- keep 30 days' worth of history -->
+	    	<maxHistory>30</maxHistory>
+	    </rollingPolicy>
+
+	    <encoder>
+	    	<pattern>%X{UUID} %X{client_ip} %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="file-business" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>logs/business.log</file>
+		<!--过滤器，只记录warn级别的日志-->
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>WARN</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- daily rollover -->
+			<fileNamePattern>logs/business.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!--<fileNamePattern>/home/zhangzb/var/log/messages</fileNamePattern>-->
+
+			<!-- keep 30 days' worth of history -->
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+
+		<encoder>
+			<pattern>%X{UUID} %X{client_ip} %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="file-error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>logs/error.log</file>
+		<!--过滤器，只记录error级别的日志-->
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<!-- daily rollover -->
+			<fileNamePattern>logs/error.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<!--<fileNamePattern>/home/zhangzb/var/log/messages</fileNamePattern>-->
+
+			<!-- keep 30 days' worth of history -->
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+
+		<encoder>
+			<pattern>%X{UUID} %X{client_ip} %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<!--<appender name="kafka" class="com.doctor.logbackextend.KafkaAppender">-->
+
+	<!--<appender name="kafka" class="com.cafintech.crawler.service.implments.KafkaAppender">-->
+		<!--<topic>kafka-test</topic>-->
+		<!--&lt;!&ndash; <zookeeperHost>127.0.0.1:2181</zookeeperHost> &ndash;&gt;-->
+		<!--&lt;!&ndash; <broker>127.0.0.1:9092</broker> &ndash;&gt;-->
+		<!--&lt;!&ndash;<zookeeperHost>127.0.0.1:2181,127.0.0.1:2182,127.0.0.1:2183</zookeeperHost>&ndash;&gt;-->
+		<!--<zookeeperHost>127.0.0.1:2181</zookeeperHost>-->
+		<!--&lt;!&ndash;<broker>127.0.0.1:9092,127.0.0.1:9093</broker>&ndash;&gt;-->
+		<!--<broker>127.0.0.1:9092</broker>-->
+	<!--</appender>-->
+
+	<root level="info">
+    	<appender-ref ref="console"/>
+    	<appender-ref ref="file" />
+    	<appender-ref ref="file-business" />
+    	<appender-ref ref="file-error" />
+		<!--<appender-ref ref="kafka" />-->
+	</root>
+</configuration>

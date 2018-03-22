@@ -1,0 +1,10 @@
+entity/MobileLocation$ServiceProviderTypeEnumConverter.class
+entity/MobileLocation.class
+enums/ProvinceNameEnum.class
+util/DynamoDBUtil.class
+enums/StringValueEnum.class
+util/FileUtil.class
+enums/IntValueEnum.class
+entity/MobileLocation$ProvinceNameEnumTypeConverter.class
+enums/ServiceProviderTypeEnum.class
+config/Config.class
