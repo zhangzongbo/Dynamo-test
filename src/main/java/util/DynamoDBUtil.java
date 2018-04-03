@@ -2,17 +2,14 @@ package util;
 
 
 import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Table;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
-import com.amazonaws.services.dynamodbv2.model.Condition;
-import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
-import com.amazonaws.services.dynamodbv2.model.ScanRequest;
-import com.amazonaws.services.dynamodbv2.model.ScanResult;
+import com.amazonaws.services.dynamodbv2.model.*;
 import org.apache.commons.lang.StringUtils;
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,11 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import config.Config;
+
+import dynamo.tool.common.config.Config;
 import entity.MobileLocation;
+import enums.MarkFieldsEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.builder;
+import dynamo.tool.common.util.FileUtil;
 
 /**
  * Created by zhangzb on 3/16/18.
@@ -145,19 +145,10 @@ public class DynamoDBUtil {
 
     private static void saveToFile(Object object, File file) {
         Gson gson = new Gson();
-        writeFile(String.valueOf(gson.toJson(object)) + "\n", file);
+        FileUtil.writeFile(String.valueOf(gson.toJson(object)) + "\n", file);
     }
 
-    private static void writeFile(String data, File file) {
 
-        try {
-            FileWriter fw = new FileWriter(file, true);
-            fw.write(data);
-            fw.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * 使用Mapper扫描
@@ -199,66 +190,36 @@ public class DynamoDBUtil {
     private static void scanPage(String tableName) {
 
 //        AmazonDynamoDBClient client = new AmazonDynamoDBClient(new BasicAWSCredentials(Config.getString("aws.dynamodb.key.name"), Config.getString("aws.dynamodb.key.value")));
-        AmazonDynamoDBClient client = getSourceClient();
+        AmazonDynamoDBClient client = getTargetClient();
         client.setEndpoint(Config.getString("aws.dynamodb.endpoint"));
         Map<String, AttributeValue> lastKeyEvaluated = null;
-        AmazonDynamoDBClient targetClient = getTargetClient();
-        log.info("begin copy table:" + tableName);
+        log.info("begin scan table:" + tableName);
         int count = 0;
+        Map<String, Condition> filter = new HashMap<>();
+        filter.put("update_time",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS("2018-03")));
+        filter.put("service_name",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS("ICE")));
+        //Map<String,Condition> filter = new HashMap<>();
+        //filter.put("AttributeValueList",new Condition().withAttributeValueList(new AttributeValue().withS("2017-12-06")));
+        //filter.put("ComparisonOperator",new Condition().withComparisonOperator("BEGINS_WITH"));
         do {
             ScanRequest scanRequest = new ScanRequest()
                     .withTableName(tableName)
+                    .withScanFilter(filter)
                     .withLimit(10)
                     .withExclusiveStartKey(lastKeyEvaluated);
 
             ScanResult result = client.scan(scanRequest);
             for (Map<String, AttributeValue> item : result.getItems()) {
                 count++;
-                if (count % 100 == 0) {
-                    log.info("*-*-**-*-**-*-*" + tableName + " save: " + count + "th! *-*-**-*-**-*-**-*-*");
-                }
-
-                saveToTable(item, tableName);
-
+                saveToTable(item,tableName);
             }
             lastKeyEvaluated = result.getLastEvaluatedKey();
         } while (lastKeyEvaluated != null);
-        log.info(tableName + "save finished,toatl:" + count);
+        log.info(tableName + " scan finished,toatl:" + count);
     }
 
     private static void scanFile(String tableName, File file) {
-        try {
-            String encoding = "UTF-8";
 
-            if (file.isFile() && file.exists()) {
-                InputStreamReader read = new InputStreamReader(
-                        new FileInputStream(file), encoding);
-                BufferedReader bufferedReader = new BufferedReader(read);
-                String lineTxt = "";
-                StringBuilder itemString = new StringBuilder();
-                while ((lineTxt = bufferedReader.readLine()) != null) {
-                    if (StringUtils.isNotEmpty(lineTxt)) {
-                        if (!lineTxt.endsWith("}}")) {
-                            //log.info("lineText:{}",lineTxt);
-                            itemString.append(lineTxt);
-                        } else {
-                            itemString.append(lineTxt);
-                            log.info("lineText:{}", itemString);
-                            itemString = new StringBuilder();
-                        }
-                    }
-//                    HashMap<String,AttributeValue> item_values = parseString(itemString);
-
-//                    saveToTable(item_values,tableName);
-                }
-                read.close();
-            } else {
-                System.out.println("找不到指定的文件");
-            }
-        } catch (Exception e) {
-            System.out.println("读取文件内容出错");
-            e.printStackTrace();
-        }
     }
 
     private static HashMap<String, AttributeValue> parseString(String itemString) {
@@ -316,9 +277,9 @@ public class DynamoDBUtil {
     public static void main(String[] args) {
 //        DynomaDBMobileInfo mobileInfo = DynamoDBUtil.queryMobileInfo("18045285092");
 
-        if (args == null || args.length < 1){
-            return;
-        }
+        //if (args == null || args.length < 1){
+        //    return;
+        //}
 //        Class.forName(args[1])
 //        scanTable("mobileLocation-test","com.cafintech.crawler.entity.MobileLocation");
 //        scanTable(args[0],args[1]);
@@ -328,9 +289,12 @@ public class DynamoDBUtil {
         //scanFile(tableName, file);
         //parseString("");
 
-        scanPage(args[0]);
+        //scanPage("crawler-contacts-prod");
 
-//        scanPage(args[0]);
+        //scanPage(args[0],args[1]);
+
+        scanPage("o2o-risk-result-prod");
+
 //        saveToTarget(mobileInfo,Config.getString("aws.dynamodb.operator.targetTable.name"));
     }
 }

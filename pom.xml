@@ -4,8 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>dynamo</groupId>
-    <artifactId>dynamo</artifactId>
+    <groupId>dynamo-tool</groupId>
+    <artifactId>dynamo-tool</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
     <build>
         <plugins>
@@ -39,6 +40,11 @@
             </plugin>
         </plugins>
     </build>
+    <modules>
+        <module>dynamo-tool-api</module>
+        <module>dynamo-tool-impl</module>
+        <module>common-util</module>
+    </modules>
     <dependencies>
         <dependency>
             <groupId>fakepath.com.amazonaws</groupId>
@@ -103,6 +109,11 @@
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
             <version>8.5.5</version>
+        </dependency>
+        <dependency>
+            <groupId>dynamo-tool</groupId>
+            <artifactId>common-util</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
