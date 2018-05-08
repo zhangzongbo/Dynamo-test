@@ -9,10 +9,13 @@ public enum  MarkFieldsEnum implements IntValueEnum {
     MINGJIAN(0x2),
     XUNJI(0x4),
     ZHICHA(0x8),
-    BLACKLIST_SUC(0x10),
-    MINGJIAN_SUC(0x20),
-    XUNJI_SUC(0x40),
-    ZHICHA_SUC(0x80);
+    HUIYAN(0x10),
+    BLACKLIST_SUC(0x20),
+    MINGJIAN_SUC(0x40),
+    XUNJI_SUC(0x80),
+    ZHICHA_SUC(0x100),
+    HUIYAN_SUC(0x200),
+    ;
 
 
     private int intValue;

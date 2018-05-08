@@ -7,6 +7,9 @@ import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.dynamodbv2.model.ComparisonOperator;
 import com.amazonaws.services.dynamodbv2.model.Condition;
 import com.amazonaws.services.dynamodbv2.model.ScanResult;
+
+import org.apache.commons.lang.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,13 +29,13 @@ public class DynamoDBScanner {
 
         int itemCount = 0;
 
-        int blackCount = 0,blackSuc = 0,xunJiCount = 0,xunJiSuc = 0,zhiChaCount = 0,zhiChaSuc = 0,mingJianCount = 0,mingJianSuc = 0;
+        int blackCount = 0, blackSuc = 0, xunJiCount = 0, xunJiSuc = 0, zhiChaCount = 0, zhiChaSuc = 0, mingJianCount = 0, mingJianSuc = 0, huiYanCount =0, huiYanSuc = 0;
 
 
         Map<String, AttributeValue> lastKeyEvaluated = null;
 
         Map<String, Condition> filter = new HashMap<>();
-        filter.put("update_time",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS("2018-03")));
+        filter.put("update_time",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS("2018-04")));
         filter.put("service_name",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS("ICE")));
 
         log.info("begin scan table: {} ",tableName);
@@ -43,27 +46,63 @@ public class DynamoDBScanner {
             for (Map<String ,AttributeValue> item : result.getItems()){
                 itemCount++;
                 int markField = countScan(item);
+                /**
+                 * 黑名单调用次数
+                 */
                 if ((markField & MarkFieldsEnum.BLACKLIST.getValue()) == MarkFieldsEnum.BLACKLIST.getValue()){
                     blackCount ++;
                 }
+                /**
+                 * 黑名单成功次数
+                 */
                 if ((markField & MarkFieldsEnum.BLACKLIST_SUC.getValue()) == MarkFieldsEnum.BLACKLIST_SUC.getValue()){
                     blackSuc ++;
                 }
+                /**
+                 * 寻迹调用次数
+                 */
                 if ((markField & MarkFieldsEnum.XUNJI.getValue()) == MarkFieldsEnum.XUNJI.getValue()){
                     xunJiCount ++;
                 }
+                /**
+                 * 寻迹成功次数
+                 */
                 if ((markField & MarkFieldsEnum.XUNJI_SUC.getValue()) == MarkFieldsEnum.XUNJI_SUC.getValue()){
                     xunJiSuc ++;
                 }
+                /**
+                 * 智查调用次数
+                 */
                 if ((markField & MarkFieldsEnum.ZHICHA.getValue()) == MarkFieldsEnum.ZHICHA.getValue()){
                     zhiChaCount ++;
                 }
+                /**
+                 * 智查成功次数
+                 */
                 if ((markField & MarkFieldsEnum.ZHICHA_SUC.getValue()) == MarkFieldsEnum.ZHICHA_SUC.getValue()){
                     zhiChaSuc ++;
                 }
+                /**
+                 * 慧眼调用次数
+                 */
+                if ((markField & MarkFieldsEnum.HUIYAN.getValue()) == MarkFieldsEnum.HUIYAN.getValue()){
+                    huiYanCount ++;
+                }
+                /**
+                 * 慧眼成功次数
+                 */
+                if ((markField & MarkFieldsEnum.HUIYAN_SUC.getValue()) == MarkFieldsEnum.HUIYAN_SUC.getValue()){
+                    huiYanSuc ++;
+                }
+                /**
+                 * 明鉴调用次数
+                 */
                 if ((markField & MarkFieldsEnum.MINGJIAN.getValue()) == MarkFieldsEnum.MINGJIAN.getValue()){
                     mingJianCount ++;
                 }
+                /**
+                 * 明鉴成功次数
+                 */
                 if ((markField & MarkFieldsEnum.MINGJIAN_SUC.getValue()) == MarkFieldsEnum.MINGJIAN_SUC.getValue()){
                     mingJianSuc ++;
                 }
@@ -73,7 +112,8 @@ public class DynamoDBScanner {
                     log.info("*-*-**-*-**-*-*blackCount: " + blackCount + " blackSuc: " + blackSuc + "*-*-**-*-**-*-**-*-*");
                     log.info("*-*-**-*-**-*-*xunJiCount: " + xunJiCount + " xunJiSuc: " + xunJiSuc + "*-*-**-*-**-*-**-*-*");
                     log.info("*-*-**-*-**-*-*zhiChaCount: " + zhiChaCount + " zhiChaSuc: " + zhiChaSuc + "*-*-**-*-**-*-**-*-*");
-                    log.info("*-*-**-*-**-*-*mingJianCount: " + mingJianCount + " mingJianSuc: " + mingJianSuc + "*-*-**-*-**-*-**-*-*\n");
+                    log.info("*-*-**-*-**-*-*mingJianCount: " + mingJianCount + " mingJianSuc: " + mingJianSuc + "*-*-**-*-**-*-**-*-*");
+                    log.info("*-*-**-*-**-*-*huiYanCount: " + huiYanCount + " huiYanSuc: " + huiYanSuc + "*-*-**-*-**-*-**-*-*\n");
                 }
             }
            lastKeyEvaluated = result.getLastEvaluatedKey();
@@ -84,6 +124,7 @@ public class DynamoDBScanner {
         log.info("*-*-**-*-**-*-*xunJiCount: " + xunJiCount + " xunJiSuc: " + xunJiSuc + "*-*-**-*-**-*-**-*-*");
         log.info("*-*-**-*-**-*-*zhiChaCount: " + zhiChaCount + " zhiChaSuc: " + zhiChaSuc + "*-*-**-*-**-*-**-*-*");
         log.info("*-*-**-*-**-*-*mingJianCount: " + mingJianCount + " mingJianSuc: " + mingJianSuc + "*-*-**-*-**-*-**-*-*");
+        log.info("*-*-**-*-**-*-*huiYanCount: " + huiYanCount + " huiYanSuc: " + huiYanSuc + "*-*-**-*-**-*-**-*-*");
 
     }
 
@@ -93,27 +134,55 @@ public class DynamoDBScanner {
         //log.info("item:{}",gson.toJson(item));
         JSONObject jsonObject = JSON.parseObject(gson.toJson(item)).getJSONObject("risk_json").getJSONObject("s");
         if (jsonObject != null){
+            /**
+             * 黑名单默认成功
+             */
             if (jsonObject.getJSONObject("BLACK") != null){
                 markField = markField + MarkFieldsEnum.BLACKLIST.getValue();
             }
+            /**
+             * 寻迹分不为-1时成功
+             */
             if (jsonObject.getJSONObject("fenli_xunji") != null){
                 markField = markField + MarkFieldsEnum.XUNJI.getValue();
                 int xunJi_score = Integer.parseInt(jsonObject.getJSONObject("fenli_xunji").getJSONObject("result").getString("score"));
-                if (xunJi_score >= 300 && xunJi_score <= 850){
+                if (xunJi_score != -1){
                     markField = markField + MarkFieldsEnum.XUNJI_SUC.getValue();
                 }
-            }if (jsonObject.getJSONObject("fenli_zhicha") != null){
+            }
+            /**
+             * 智查分不为-1时成功
+             */
+            if (jsonObject.getJSONObject("fenli_zhicha") != null){
                 markField = markField +  MarkFieldsEnum.ZHICHA.getValue();
                 int zhiCha_score = Integer.parseInt(jsonObject.getJSONObject("fenli_zhicha").getJSONObject("result").getString("score"));
-                if (zhiCha_score >= 300 && zhiCha_score <= 850){
+                if (zhiCha_score != -1){
                     markField = markField + MarkFieldsEnum.ZHICHA_SUC.getValue();
                 }
-            }if (jsonObject.getJSONObject("MING_JIAN_REPORT") != null){
+            }
+            /**
+             * 明鉴分不为300.5且没有出现"规则0"时成功
+             */
+            if (jsonObject.getJSONObject("MING_JIAN_REPORT") != null){
                 markField = markField +  MarkFieldsEnum.MINGJIAN.getValue() + MarkFieldsEnum.MINGJIAN_SUC.getValue();
                 String bj_score = jsonObject.getJSONObject("MING_JIAN_REPORT").getString("bj_score");
                 String bj_details = jsonObject.getJSONObject("MING_JIAN_REPORT").getString("bj_details");
                 if ("300.5".equals(bj_score) || "规则0：运营商数据缺失".equals(bj_details)){
                     markField = markField - MarkFieldsEnum.MINGJIAN_SUC.getValue();
+                }
+            }
+            /**
+             * 慧眼bj_score不为空时成功
+             */
+            if (jsonObject.getJSONObject("fenli_huiyan18") != null){
+                markField = markField +  MarkFieldsEnum.HUIYAN.getValue();
+                String huiyan_score = jsonObject.getJSONObject("fenli_huiyan18")
+                        .getJSONObject("result")
+                        .getJSONObject("GeneralRepaymentScore")
+                        .getJSONObject("GeneralRepaymentScore")
+                        .getString("bj_score");
+                if (StringUtils.isNotEmpty(huiyan_score)){
+                    markField = markField + MarkFieldsEnum.HUIYAN_SUC.getValue();
                 }
             }
         }
@@ -122,7 +191,7 @@ public class DynamoDBScanner {
     }
 
     public static void main(String[] args) {
-        scanPage("o2o-risk-result-prod");
+        scanPage("o2o-risk-result-test");
     }
 
 }
