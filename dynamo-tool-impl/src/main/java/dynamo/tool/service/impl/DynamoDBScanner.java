@@ -25,7 +25,7 @@ public class DynamoDBScanner {
 
     private static DynamoServiceImpl dynamoService = new DynamoServiceImpl();
 
-    public static void scanPage(String tableName){
+    public static void scanPage(String tableName, String month){
 
         int itemCount = 0;
 
@@ -35,7 +35,7 @@ public class DynamoDBScanner {
         Map<String, AttributeValue> lastKeyEvaluated = null;
 
         Map<String, Condition> filter = new HashMap<>();
-        filter.put("update_time",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS("2018-04")));
+        filter.put("update_time",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS(month))); //"2018-04"
         filter.put("service_name",new Condition().withComparisonOperator(ComparisonOperator.BEGINS_WITH).withAttributeValueList(new AttributeValue().withS("ICE")));
 
         log.info("begin scan table: {} ",tableName);
@@ -191,7 +191,29 @@ public class DynamoDBScanner {
     }
 
     public static void main(String[] args) {
-        scanPage("o2o-risk-result-test");
+        //scanPage("o2o-risk-result-test","2018-04");
+        if (args.length < 2){
+            log.info("参数错误，请检查参数！示例： test 2018-04");
+            return;
+        }
+        String tableName;
+        switch (args[0]){
+            case "test":
+                tableName = "o2o-risk-result-test";
+                break;
+            case "prod":
+                tableName = "o2o-risk-result-prod";
+                break;
+            default:
+                log.info("表名参数输入错误，可选参数：test | prod");
+                return;
+        }
+        if (!args[1].contains("-") || !args[1].startsWith("20") || !(args[1].length() == 7)){
+            log.info("月份参数错误：示例：2018-04");
+            return;
+        }
+
+        scanPage(tableName,args[1]);
     }
 
 }

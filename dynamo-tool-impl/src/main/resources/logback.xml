@@ -22,7 +22,7 @@ See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-
 		<!--</filter>-->
 		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
 	    	<!-- daily rollover -->
-	    	<fileNamePattern>logs/loanspider.%d{yyyy-MM-dd}.log</fileNamePattern>
+	    	<fileNamePattern>logs/count.%d{yyyy-MM-dd}.log</fileNamePattern>
 	    	<!--<fileNamePattern>/home/zhangzb/var/log/messages</fileNamePattern>-->
 
 	    	<!-- keep 30 days' worth of history -->
