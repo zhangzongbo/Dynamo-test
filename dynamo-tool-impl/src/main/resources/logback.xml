@@ -13,7 +13,7 @@ See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-
     </appender>
     
     <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
-	    <file>logs/log.log</file>
+	    <file>logs/result.log</file>
         <!--过滤器，只记录info级别的日志-->
 		<!--<filter class="ch.qos.logback.classic.filter.LevelFilter">-->
 			<!--<level>INFO</level>-->
@@ -30,7 +30,8 @@ See here for more details: http://gordondickens.com/wordpress/2013/03/27/sawing-
 	    </rollingPolicy>
 
 	    <encoder>
-	    	<pattern>%X{UUID} %X{client_ip} %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>
+	    	<!--<pattern>%X{UUID} %X{client_ip} %date %level [%thread] %logger{10} [%file:%line] %msg%n</pattern>-->
+	    	<pattern>%msg%n</pattern>
 		</encoder>
 	</appender>
 
